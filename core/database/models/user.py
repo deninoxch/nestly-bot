@@ -18,7 +18,6 @@ class User(Base):
     role: Mapped[UserRole] = mapped_column(default=UserRole.USER)
 
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    created_at = Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
-
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     def __repr__(self) -> str:
         return f'<User id={self.id} telegram_id={self.telegram_id} role={self.role}>'

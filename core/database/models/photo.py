@@ -1,7 +1,7 @@
 from sqlalchemy import String, Integer, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from core.database import Base
+from core.database.base import Base
 
 class ProductPhoto(Base):
     __tablename__ = 'product_photos'

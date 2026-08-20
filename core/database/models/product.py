@@ -10,7 +10,7 @@ from core.enums import Country
 
 
 class Product(Base):
-    __tablename__ == 'products'
+    __tablename__ = 'products'
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
@@ -28,8 +28,6 @@ class Product(Base):
 
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now()) 
-
-    products: Mapped[list["Product"]] = relationship(back_populates="category")  
 
     category: Mapped['Category'] = relationship(back_populates="products")
     creator: Mapped['User'] = relationship()

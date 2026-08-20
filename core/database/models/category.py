@@ -14,6 +14,8 @@ class Category(Base):
     name_ru: Mapped[str] = mapped_column(String(255), nullable=False)
     name_uz: Mapped[str] = mapped_column(String(255), nullable=False)
 
+    products: Mapped[list["Product"]] = relationship(back_populates="category")  
+
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     parent: Mapped['Category | None'] = relationship(
@@ -21,7 +23,7 @@ class Category(Base):
         back_populates='children'
     )
 
-    children: Mapped[list["Category"]] == relationship(
+    children: Mapped[list["Category"]] = relationship(
         back_populates='parent',
     )
 
