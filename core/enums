@@ -8,7 +8,7 @@ class UserRole(str, Enum):
 
 class Language(str, Enum):
     RU = 'ru'
-    US = 'us'
+    USA = 'en'
 
 class AppilacationStatus(str, Enum):
     PENDING = 'pending'
@@ -17,4 +17,9 @@ class AppilacationStatus(str, Enum):
 
 class Country(str, Enum):
     RUSSIA = 'russia'
-    TURKEY = 'turkey'
+    USA = 'usa'
+
+class ApplicationStatus(str, Enum):
+    PENDING = "pending"
+    ACCEPTED = "accepted"
+    REJECTED = "rejected"   
