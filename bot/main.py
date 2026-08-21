@@ -10,7 +10,8 @@ from bot.handlers.user import catalog as user_catalog
 from bot.middlewares.db_session_middleware import DbSessionMiddleware
 from bot.middlewares.i18n_middleware import I18nMiddleware
 
-
+from bot.handlers.user import catalog as user_catalog
+from bot.handlers.user import language as user_language
 async def main():
     logging.basicConfig(level=logging.INFO)
 
@@ -24,6 +25,8 @@ async def main():
     dp.update.middleware(I18nMiddleware())
 
     dp.include_router(user_catalog.router)
+    dp.include_router(user_language.router)
+
 
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
