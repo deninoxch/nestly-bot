@@ -18,11 +18,9 @@ class Product(Base):
     created_by: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
 
     name_ru: Mapped[str] = mapped_column(String(255), nullable=False)
-    name_uz: Mapped[str] = mapped_column(String(255), nullable=False)
-
+    name_en: Mapped[str] = mapped_column(String(255), nullable=False)
     description_ru: Mapped[str | None] = mapped_column(Text, nullable=True)
-    description_uz: Mapped[str | None] = mapped_column(Text, nullable=True)
-
+    description_en: Mapped[str | None] = mapped_column(Text, nullable=True)
     country: Mapped[Country] = mapped_column(nullable=False)
     price: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
 
