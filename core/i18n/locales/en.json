@@ -17,5 +17,12 @@
   "admin_added": "✅ User assigned as admin",
   "send_admin_telegram_id": "Send the Telegram ID of the user to assign as admin:",
   "invalid_telegram_id": "❌ This doesn't look like a valid Telegram ID (digits only)",
-  "user_not_found": "❌ This user hasn't started the bot yet. Ask them to send /start first"
+  "user_not_found": "❌ This user hasn't started the bot yet. Ask them to send /start first",
+  "choose_parent_category": "Choose parent category (or 'No parent' for a top-level category):",
+  "no_parent_root": "🔝 No parent (top level)",
+  "enter_category_name_ru": "Enter category name in Russian:",
+  "enter_category_name_en": "Enter category name in English:",
+  "category_added": "✅ Category added successfully",
+  "btn_cancel": "❌ Cancel",
+  "must_be_english": "❌ This doesn't look like English. Please try again:"
 }

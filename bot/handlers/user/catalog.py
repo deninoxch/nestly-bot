@@ -42,27 +42,12 @@ async def safe_edit_media(message: Message, media, reply_markup=None):
 
 @router.message(CommandStart())
 async def cmd_start(message: Message, lang: Language, session: AsyncSession):
-    categories = await get_categories_by_parent(session, parent_id=None)
-
-    if not categories:
-        await message.answer(get_text("welcome_message", lang))
-        return
-
-    await message.answer(
-        get_text("welcome_message", lang),
-        reply_markup=categories_keyboard(categories, lang, parent_id=None, is_root=True),
-    )
+    await render_main_menu(message, lang, session, edit=False)
 
 
 @router.callback_query(F.data == "menu:main")
 async def show_main_menu(callback: CallbackQuery, lang: Language, session: AsyncSession):
-    categories = await get_categories_by_parent(session, parent_id=None)
-
-    await safe_edit_text(
-        callback.message,
-        get_text("welcome_message", lang),
-        reply_markup=categories_keyboard(categories, lang, parent_id=None, is_root=True),
-    )
+    await render_main_menu(callback.message, lang, session, edit=True)
     await callback.answer()
 
 
@@ -188,3 +173,13 @@ def _build_product_caption(product, lang: Language) -> str:
     description = description or ""
 
     return f"<b>{name}</b>\n\n{description}\n\n💰 {product.price} ₽"
+
+async def render_main_menu(message_or_callback_message, lang: Language, session: AsyncSession, edit: bool = False):
+    categories = await get_categories_by_parent(session, parent_id=None)
+    text = get_text("welcome_message", lang)
+    markup = categories_keyboard(categories, lang, parent_id=None, is_root=True)
+
+    if edit:
+        await safe_edit_text(message_or_callback_message, text, reply_markup=markup)
+    else:
+        await message_or_callback_message.answer(text, reply_markup=markup)
