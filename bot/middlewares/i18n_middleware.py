@@ -4,8 +4,10 @@ from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject, User as TgUser
 from sqlalchemy import select
 
-from core.database.models.user import User 
-from core.enums import Language
+from core.database.models.user import User
+from core.enums import Language, UserRole
+from core.config import settings
+
 
 class I18nMiddleware(BaseMiddleware):
     async def __call__(
@@ -14,9 +16,8 @@ class I18nMiddleware(BaseMiddleware):
         event: TelegramObject,
         data: dict[str, Any],
     ) -> Any:
-        session = data['session']
+        session = data["session"]
         tg_user: TgUser | None = data.get("event_from_user")
-
 
         if tg_user is None:
             return await handler(event, data)
@@ -27,16 +28,23 @@ class I18nMiddleware(BaseMiddleware):
         db_user = result.scalar_one_or_none()
 
         if db_user is None:
+            role = UserRole.SUPERADMIN if tg_user.id == settings.SUPERADMIN_ID else UserRole.USER
             db_user = User(
                 telegram_id=tg_user.id,
                 full_name=tg_user.full_name,
                 language=Language.RU,
+                role=role,
             )
             session.add(db_user)
             await session.commit()
             await session.refresh(db_user)
+        else:
+            if tg_user.id == settings.SUPERADMIN_ID and db_user.role != UserRole.SUPERADMIN:
+                db_user.role = UserRole.SUPERADMIN
+                await session.commit()
+                await session.refresh(db_user)
 
-        data['user'] = db_user
-        data['lang'] = db_user.language
+        data["user"] = db_user
+        data["lang"] = db_user.language
 
         return await handler(event, data)
