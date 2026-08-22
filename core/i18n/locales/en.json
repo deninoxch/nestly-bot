@@ -7,5 +7,15 @@
   "choose_language": "Choose interface language:",
   "language_changed": "✅ Language switched to English",
   "no_products": "No products in this category yet",
-  "choose_country": "Choose country of origin:"
+  "choose_country": "Choose country of origin:",
+  "btn_manage_admins": "👥 Manage admins",
+  "btn_add_admin": "➕ Assign admin",
+  "admin_panel_title": "⚙️ Superadmin panel",
+  "current_admins_title": "Current admins (tap to remove role):",
+  "no_admins_yet": "No admins yet",
+  "admin_removed": "Role removed",
+  "admin_added": "✅ User assigned as admin",
+  "send_admin_telegram_id": "Send the Telegram ID of the user to assign as admin:",
+  "invalid_telegram_id": "❌ This doesn't look like a valid Telegram ID (digits only)",
+  "user_not_found": "❌ This user hasn't started the bot yet. Ask them to send /start first"
 }

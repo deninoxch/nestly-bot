@@ -1,0 +1,100 @@
+from aiogram import Router, F
+from aiogram.filters import Command, StateFilter
+from aiogram.fsm.context import FSMContext
+from aiogram.types import Message, CallbackQuery
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from bot.filters.role_filters import IsSuperAdmin
+from bot.states.role_states import AssignAdminStates
+from bot.keyboards.admin_kb import admin_panel_keyboard, admins_list_keyboard
+from core.crud.users_crud import get_admins, get_user_by_telegram_id, set_user_role
+from core.enums import Language, UserRole
+from core.i18n.translator import get_text
+
+router = Router()
+router.message.filter(IsSuperAdmin())
+router.callback_query.filter(IsSuperAdmin())
+
+
+@router.message(Command("admin_panel"))
+async def cmd_admin_panel(message: Message, lang: Language):
+    await message.answer(
+        get_text("admin_panel_title", lang),
+        reply_markup=admin_panel_keyboard(lang),
+    )
+
+
+@router.callback_query(F.data == "admin_panel:main")
+async def show_admin_panel(callback: CallbackQuery, lang: Language):
+    await callback.message.edit_text(
+        get_text("admin_panel_title", lang),
+        reply_markup=admin_panel_keyboard(lang),
+    )
+    await callback.answer()
+
+
+@router.callback_query(F.data == "admins:list")
+async def show_admins_list(callback: CallbackQuery, lang: Language, session: AsyncSession):
+    admins = await get_admins(session)
+
+    if not admins:
+        text = get_text("no_admins_yet", lang)
+    else:
+        text = get_text("current_admins_title", lang)
+
+    await callback.message.edit_text(
+        text,
+        reply_markup=admins_list_keyboard(admins, lang),
+    )
+    await callback.answer()
+
+
+@router.callback_query(F.data.startswith("admin_remove:"))
+async def remove_admin(callback: CallbackQuery, lang: Language, session: AsyncSession):
+    from core.database.models.user import User
+    from sqlalchemy import select
+
+    user_id = int(callback.data.split(":")[1])
+    result = await session.execute(select(User).where(User.id == user_id))
+    target_user = result.scalar_one_or_none()
+
+    if target_user:
+        await set_user_role(session, target_user, UserRole.USER)
+
+    admins = await get_admins(session)
+    await callback.message.edit_text(
+        get_text("current_admins_title", lang) if admins else get_text("no_admins_yet", lang),
+        reply_markup=admins_list_keyboard(admins, lang),
+    )
+    await callback.answer(get_text("admin_removed", lang))
+
+
+@router.callback_query(F.data == "admin_add")
+async def start_add_admin(callback: CallbackQuery, lang: Language, state: FSMContext):
+    await callback.message.edit_text(get_text("send_admin_telegram_id", lang))
+    await state.set_state(AssignAdminStates.waiting_for_telegram_id)
+    await callback.answer()
+
+
+@router.message(StateFilter(AssignAdminStates.waiting_for_telegram_id))
+async def process_add_admin(message: Message, lang: Language, session: AsyncSession, state: FSMContext):
+    if not message.text or not message.text.isdigit():
+        await message.answer(get_text("invalid_telegram_id", lang))
+        return
+
+    telegram_id = int(message.text)
+    target_user = await get_user_by_telegram_id(session, telegram_id)
+
+    if target_user is None:
+        await message.answer(get_text("user_not_found", lang))
+        await state.clear()
+        return
+
+    await set_user_role(session, target_user, UserRole.ADMIN)
+    await state.clear()
+
+    admins = await get_admins(session)
+    await message.answer(
+        get_text("admin_added", lang),
+        reply_markup=admins_list_keyboard(admins, lang),
+    )
