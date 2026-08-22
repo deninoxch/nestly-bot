@@ -5,14 +5,21 @@ from aiogram.exceptions import TelegramBadRequest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.crud.categories_crud import get_categories_by_parent, get_category_by_id
-from core.crud.products_crud import get_products_by_category, get_product_by_id
-from core.enums import Language
+from core.crud.products_crud import (
+    get_products_by_category,
+    get_product_by_id,
+    get_distinct_countries,
+    get_products_by_category_and_country,
+)
+from core.enums import Language, Country
 from core.i18n.translator import get_text
 from bot.keyboards.user_kb import (
     categories_keyboard,
     products_list_keyboard,
     product_card_keyboard,
+    country_filter_keyboard,
 )
+
 
 router = Router()
 
@@ -65,9 +72,9 @@ async def show_category(callback: CallbackQuery, lang: Language, session: AsyncS
 
     current_category = await get_category_by_id(session, category_id)
     subcategories = await get_categories_by_parent(session, parent_id=category_id)
+    name = current_category.name_ru if lang == Language.RU else current_category.name_en
 
     if subcategories:
-        name = current_category.name_ru if lang == Language.RU else current_category.name_en
         await safe_edit_text(
             callback.message,
             name,
@@ -76,26 +83,48 @@ async def show_category(callback: CallbackQuery, lang: Language, session: AsyncS
             ),
         )
     else:
-        products = await get_products_by_category(session, category_id)
-        name = current_category.name_ru if lang == Language.RU else current_category.name_en
+        countries = await get_distinct_countries(session, category_id)
 
-        if not products:
+        if len(countries) > 1:
             await safe_edit_text(
                 callback.message,
-                f"📦 {name}\n\n{get_text('no_products', lang)}",
-                reply_markup=categories_keyboard(
-                    [], lang, parent_id=current_category.parent_id
+                f"📦 {name}\n\n{get_text('choose_country', lang)}",
+                reply_markup=country_filter_keyboard(
+                    countries, category_id, current_category.parent_id, lang
                 ),
             )
-        else:
+        elif len(countries) == 1:
+            products = await get_products_by_category_and_country(session, category_id, countries[0])
             await safe_edit_text(
                 callback.message,
                 f"📦 {name}",
                 reply_markup=products_list_keyboard(products, current_category.parent_id, lang),
             )
+        else:
+            await safe_edit_text(
+                callback.message,
+                f"📦 {name}\n\n{get_text('no_products', lang)}",
+                reply_markup=categories_keyboard([], lang, parent_id=current_category.parent_id),
+            )
 
     await callback.answer()
 
+@router.callback_query(F.data.startswith("prodcountry:"))
+async def show_products_by_country(callback: CallbackQuery, lang: Language, session: AsyncSession):
+    _, category_id_str, country_value = callback.data.split(":")
+    category_id = int(category_id_str)
+    country = Country(country_value)
+
+    current_category = await get_category_by_id(session, category_id)
+    products = await get_products_by_category_and_country(session, category_id, country)
+    name = current_category.name_ru if lang == Language.RU else current_category.name_en
+
+    await safe_edit_text(
+        callback.message,
+        f"📦 {name}",
+        reply_markup=products_list_keyboard(products, current_category.parent_id, lang),
+    )
+    await callback.answer()
 
 @router.callback_query(F.data.startswith("product:"))
 async def show_product_card(callback: CallbackQuery, lang: Language, session: AsyncSession):

@@ -87,3 +87,33 @@ def products_list_keyboard(
     )
 
     return builder.as_markup()
+
+from core.enums import Country
+
+
+def country_filter_keyboard(
+    countries: list[Country],
+    category_id: int,
+    parent_id: int | None,
+    lang: Language,
+) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+
+    flags = {Country.RUSSIA: "🇷🇺", Country.USA: "🇺🇸"}
+    names = {
+        Country.RUSSIA: {"ru": "Россия", "en": "Russia"},
+        Country.USA: {"ru": "США", "en": "USA"},
+    }
+
+    for country in countries:
+        label = f"{flags[country]} {names[country][lang.value]}"
+        builder.button(text=label, callback_data=f"prodcountry:{category_id}:{country.value}")
+
+    builder.adjust(2)
+
+    back_callback = f"cat:{parent_id}" if parent_id is not None else "menu:main"
+    builder.row(
+        InlineKeyboardButton(text=get_text("btn_back", lang), callback_data=back_callback)
+    )
+
+    return builder.as_markup()
