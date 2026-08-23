@@ -1,5 +1,6 @@
 from aiogram import Router, F
 from aiogram.filters import CommandStart
+from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, InputMediaPhoto
 from aiogram.exceptions import TelegramBadRequest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -59,12 +60,14 @@ async def render_main_menu(message_or_callback_message, lang: Language, session:
 
 
 @router.message(CommandStart())
-async def cmd_start(message: Message, lang: Language, session: AsyncSession):
+async def cmd_start(message: Message, lang: Language, session: AsyncSession, state: FSMContext):
+    await state.clear()
     await render_main_menu(message, lang, session, edit=False)
 
 
 @router.callback_query(F.data == "menu:main")
-async def show_main_menu(callback: CallbackQuery, lang: Language, session: AsyncSession):
+async def show_main_menu(callback: CallbackQuery, lang: Language, session: AsyncSession, state: FSMContext):
+    await state.clear()
     await render_main_menu(callback.message, lang, session, edit=True)
     await callback.answer()
 
@@ -185,7 +188,6 @@ async def switch_photo(callback: CallbackQuery, lang: Language, session: AsyncSe
 @router.callback_query(F.data == "noop")
 async def noop_handler(callback: CallbackQuery):
     await callback.answer()
-
 
 
 def _build_product_caption(product, lang: Language) -> str:

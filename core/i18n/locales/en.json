@@ -57,5 +57,7 @@
   "application_processed": "Application processed",
   "application_accepted": "🎉 Your cooperation application has been accepted! We'll be in touch soon.",
   "application_rejected": "Unfortunately, your cooperation application has been rejected.",
-  "btn_message_applicant": "💬 Message on Telegram"
+  "btn_message_applicant": "💬 Message on Telegram",
+  "invalid_name": "❌ Name cannot be empty",
+  "action_not_allowed": "❌ This action is not allowed"
 }

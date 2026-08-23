@@ -10,20 +10,20 @@ from bot.keyboards.admin_kb import (
     categories_selection_keyboard,
     leaf_categories_keyboard,
     country_selection_keyboard,
+    skip_keyboard,
+    finish_photos_keyboard,
 )
 from bot.handlers.user.catalog import render_main_menu
 from core.crud.categories_crud import get_categories_by_parent, get_category_by_id, get_leaf_categories
 from core.database.models.category import Category
+from core.database.models.product import Product
+from core.database.models.photo import ProductPhoto
+from core.database.models.user import User
 from core.enums import Language, Country
 from core.i18n.translator import get_text
 from core.utils import contains_cyrillic
 
-from core.database.models.product import Product
-from core.database.models.photo import ProductPhoto
-
-from core.database.models.user import User
-from bot.keyboards.admin_kb import skip_keyboard, finish_photos_keyboard
-
+from core.logger import logger
 
 router = Router()
 router.message.filter(IsAdmin())
@@ -33,6 +33,7 @@ router.callback_query.filter(IsAdmin())
 
 @router.message(Command("add_category"))
 async def cmd_add_category(message: Message, lang: Language, session: AsyncSession, state: FSMContext):
+    await state.clear()
     await message.answer(
         get_text("choose_parent_category", lang),
         reply_markup=await categories_selection_keyboard(session, lang, current_parent_id=None),
@@ -55,13 +56,21 @@ async def process_parent_selection(callback: CallbackQuery, lang: Language, stat
 
 @router.message(StateFilter(AddCategoryStates.waiting_for_name_ru))
 async def process_category_name_ru(message: Message, lang: Language, state: FSMContext):
-    await state.update_data(name_ru=message.text)
+    if not message.text or not message.text.strip():
+        await message.answer(get_text("invalid_name", lang))
+        return
+
+    await state.update_data(name_ru=message.text.strip())
     await message.answer(get_text("enter_category_name_en", lang))
     await state.set_state(AddCategoryStates.waiting_for_name_en)
 
 
 @router.message(StateFilter(AddCategoryStates.waiting_for_name_en))
 async def process_category_name_en(message: Message, lang: Language, session: AsyncSession, state: FSMContext):
+    if not message.text or not message.text.strip():
+        await message.answer(get_text("invalid_name", lang))
+        return
+
     if contains_cyrillic(message.text):
         await message.answer(get_text("must_be_english", lang))
         return
@@ -71,10 +80,18 @@ async def process_category_name_en(message: Message, lang: Language, session: As
     new_category = Category(
         parent_id=data["parent_id"],
         name_ru=data["name_ru"],
-        name_en=message.text,
+        name_en=message.text.strip(),
     )
     session.add(new_category)
     await session.commit()
+
+    session.add(new_category)
+    await session.commit()
+    logger.info(f"Category created: id={new_category.id}, name_ru={new_category.name_ru}")
+
+    await state.clear()
+    await message.answer(get_text("category_added", lang))
+    await render_main_menu(message, lang, session, edit=False)
 
     await state.clear()
     await message.answer(get_text("category_added", lang))
@@ -84,6 +101,7 @@ async def process_category_name_en(message: Message, lang: Language, session: As
 
 @router.message(Command("add_product"))
 async def cmd_add_product(message: Message, lang: Language, session: AsyncSession, state: FSMContext):
+    await state.clear()
     categories = await get_leaf_categories(session)
 
     if not categories:
@@ -111,24 +129,33 @@ async def process_product_category(callback: CallbackQuery, lang: Language, stat
 
 @router.message(StateFilter(AddProductStates.waiting_for_name_ru))
 async def process_product_name_ru(message: Message, lang: Language, state: FSMContext):
-    await state.update_data(name_ru=message.text)
-    await message.answer(get_text("enter_product_name_en", lang))
+    if not message.text or not message.text.strip():
+        await message.answer(get_text("invalid_name", lang))
+        return
+
+    await state.update_data(name_ru=message.text.strip())
+    await message.answer(
+        get_text("enter_product_name_en", lang),
+    )
     await state.set_state(AddProductStates.waiting_for_name_en)
 
 
 @router.message(StateFilter(AddProductStates.waiting_for_name_en))
 async def process_product_name_en(message: Message, lang: Language, state: FSMContext):
+    if not message.text or not message.text.strip():
+        await message.answer(get_text("invalid_name", lang))
+        return
+
     if contains_cyrillic(message.text):
         await message.answer(get_text("must_be_english", lang))
         return
 
-    await state.update_data(name_en=message.text)
+    await state.update_data(name_en=message.text.strip())
     await message.answer(
         get_text("enter_product_description_ru", lang),
         reply_markup=skip_keyboard(lang),
     )
     await state.set_state(AddProductStates.waiting_for_description_ru)
-
 
 
 @router.message(StateFilter(AddProductStates.waiting_for_description_ru))
@@ -180,6 +207,7 @@ async def skip_description_en(callback: CallbackQuery, lang: Language, state: FS
     await state.set_state(AddProductStates.waiting_for_country)
     await callback.answer()
 
+
 @router.callback_query(
     StateFilter(AddProductStates.waiting_for_country), F.data.startswith("selectcountry:")
 )
@@ -192,14 +220,13 @@ async def process_product_country(callback: CallbackQuery, lang: Language, state
     await callback.answer()
 
 
-
 @router.message(StateFilter(AddProductStates.waiting_for_price))
 async def process_product_price(message: Message, lang: Language, state: FSMContext):
     try:
         price = float(message.text.replace(",", "."))
         if price <= 0:
             raise ValueError
-    except (ValueError, AttributeError):
+    except (ValueError, AttributeError, TypeError):
         await message.answer(get_text("invalid_price", lang))
         return
 
@@ -257,6 +284,14 @@ async def finish_adding_product(
         session.add(ProductPhoto(product_id=new_product.id, file_id=file_id, position=index))
 
     await session.commit()
+    await session.commit()
+    logger.info(f"Product created: id={new_product.id}, name_ru={new_product.name_ru}, by user_id={user.id}")
+    await state.clear()
+
+    await callback.message.answer(get_text("product_added", lang))
+    await render_main_menu(callback.message, lang, session, edit=False)
+    await callback.answer()
+    
     await state.clear()
 
     await callback.message.answer(get_text("product_added", lang))

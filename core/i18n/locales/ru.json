@@ -57,5 +57,7 @@
   "application_processed": "Заявка обработана",
   "application_accepted": "🎉 Ваша заявка на сотрудничество принята! Мы скоро свяжемся с вами.",
   "application_rejected": "К сожалению, ваша заявка на сотрудничество отклонена.",
-  "btn_message_applicant": "💬 Написать в Telegram"
+  "btn_message_applicant": "💬 Написать в Telegram",
+  "invalid_name": "❌ Название не может быть пустым",
+  "action_not_allowed": "❌ Это действие недоступно"
 }

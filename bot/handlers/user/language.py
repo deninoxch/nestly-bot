@@ -1,5 +1,6 @@
 from aiogram import Router, F
 from aiogram.filters import Command
+from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,7 +13,8 @@ router = Router()
 
 
 @router.message(Command("language"))
-async def cmd_language(message: Message, lang: Language):
+async def cmd_language(message: Message, lang: Language, state: FSMContext):
+    await state.clear()
     await message.answer(
         get_text("choose_language", lang),
         reply_markup=language_keyboard(lang),
@@ -20,7 +22,8 @@ async def cmd_language(message: Message, lang: Language):
 
 
 @router.callback_query(F.data == "menu:language")
-async def show_language_menu(callback: CallbackQuery, lang: Language):
+async def show_language_menu(callback: CallbackQuery, lang: Language, state: FSMContext):
+    await state.clear()
     await callback.message.edit_text(
         get_text("choose_language", lang),
         reply_markup=language_keyboard(lang),

@@ -9,7 +9,7 @@ from core.crud.applications_crud import get_pending_applications, get_applicatio
 from core.database.models.user import User
 from core.enums import Language, ApplicationStatus
 from core.i18n.translator import get_text
-
+from core.logger import logger
 router = Router()
 router.callback_query.filter(IsAdmin())
 
@@ -65,16 +65,9 @@ async def _resolve_application(
     application.reviewed_by = admin.id
     application.reviewed_at = datetime.utcnow()
     await session.commit()
+    logger.info(f"Application {application.id} resolved as {new_status.value} by admin_id={admin.id}")
 
     applicant = application.applicant
-    notification_key = "application_accepted" if new_status == ApplicationStatus.ACCEPTED else "application_rejected"
-    try:
-        await bot.send_message(
-            applicant.telegram_id,
-            get_text(notification_key, applicant.language),
-        )
-    except Exception:
-        pass
 
     applications = await get_pending_applications(session)
     await callback.message.edit_text(

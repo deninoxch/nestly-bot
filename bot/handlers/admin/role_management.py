@@ -10,6 +10,8 @@ from core.crud.users_crud import get_admins, get_user_by_telegram_id, set_user_r
 from core.enums import Language, UserRole
 from core.i18n.translator import get_text
 
+from core.logger import logger
+
 router = Router()
 router.message.filter(IsSuperAdmin())
 router.callback_query.filter(IsSuperAdmin())
@@ -25,7 +27,8 @@ async def cmd_admin_panel(message: Message, lang: Language, state: FSMContext):
 
 
 @router.callback_query(F.data == "admin_panel:main")
-async def show_admin_panel(callback: CallbackQuery, lang: Language):
+async def show_admin_panel(callback: CallbackQuery, lang: Language, state: FSMContext):
+    await state.clear()
     await callback.message.edit_text(
         get_text("admin_panel_title", lang),
         reply_markup=admin_panel_keyboard(lang),
@@ -58,8 +61,12 @@ async def remove_admin(callback: CallbackQuery, lang: Language, session: AsyncSe
     result = await session.execute(select(User).where(User.id == user_id))
     target_user = result.scalar_one_or_none()
 
-    if target_user:
-        await set_user_role(session, target_user, UserRole.USER)
+    if target_user is None or target_user.role != UserRole.ADMIN:
+        await callback.answer(get_text("action_not_allowed", lang), show_alert=True)
+        return
+
+    await set_user_role(session, target_user, UserRole.USER)
+    logger.info(f"Admin role removed: user_id={target_user.id}, by superadmin_id={callback.from_user.id}")
 
     admins = await get_admins(session)
     await callback.message.edit_text(
@@ -67,8 +74,7 @@ async def remove_admin(callback: CallbackQuery, lang: Language, session: AsyncSe
         reply_markup=admins_list_keyboard(admins, lang),
     )
     await callback.answer(get_text("admin_removed", lang))
-
-
+    
 @router.callback_query(F.data == "admin_add")
 async def start_add_admin(callback: CallbackQuery, lang: Language, session: AsyncSession):
     users = await get_regular_users(session)
@@ -91,6 +97,7 @@ async def process_make_admin(callback: CallbackQuery, lang: Language, session: A
 
     if target_user:
         await set_user_role(session, target_user, UserRole.ADMIN)
+        logger.info(f"User promoted to admin: telegram_id={telegram_id}, by superadmin_id={callback.from_user.id}")
 
     admins = await get_admins(session)
     await callback.message.edit_text(get_text("admin_added", lang))
