@@ -15,6 +15,7 @@ from core.database.models.category import Category
 def admin_panel_keyboard(lang: Language) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(text=get_text("btn_manage_admins", lang), callback_data="admins:list")
+    builder.button(text=get_text("btn_view_applications", lang), callback_data="apps:list")
     builder.adjust(1)
     return builder.as_markup()
 
@@ -102,4 +103,51 @@ def skip_keyboard(lang: Language) -> InlineKeyboardMarkup:
 def finish_photos_keyboard(lang: Language) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(text=get_text("btn_finish_photos", lang), callback_data="finish_photos")
+    return builder.as_markup()
+
+def users_selection_keyboard(users: list[User], lang: Language) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+
+    for u in users:
+        label = u.full_name or str(u.telegram_id)
+        builder.button(text=label, callback_data=f"makeadmin:{u.telegram_id}")
+
+    builder.adjust(1)
+    builder.row(
+        InlineKeyboardButton(text=get_text("btn_back", lang), callback_data="admins:list")
+    )
+
+    return builder.as_markup()
+
+
+from core.database.models.application import Application
+
+
+def applications_list_keyboard(applications: list[Application], lang: Language) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+
+    for app in applications:
+        builder.button(text=f"📋 {app.company_name}", callback_data=f"app_view:{app.id}")
+
+    builder.adjust(1)
+    builder.row(
+        InlineKeyboardButton(text=get_text("btn_back", lang), callback_data="admin_panel:main")
+    )
+    return builder.as_markup()
+
+
+def application_card_keyboard(application_id: int, applicant_telegram_id: int, lang: Language) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(text=get_text("btn_accept", lang), callback_data=f"app_accept:{application_id}")
+    builder.button(text=get_text("btn_reject", lang), callback_data=f"app_reject:{application_id}")
+    builder.adjust(2)
+    builder.row(
+        InlineKeyboardButton(
+            text=get_text("btn_message_applicant", lang),
+            url=f"tg://user?id={applicant_telegram_id}",
+        )
+    )
+    builder.row(
+        InlineKeyboardButton(text=get_text("btn_back", lang), callback_data="apps:list")
+    )
     return builder.as_markup()

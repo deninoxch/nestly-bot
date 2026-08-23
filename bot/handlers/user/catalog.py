@@ -187,10 +187,6 @@ async def noop_handler(callback: CallbackQuery):
     await callback.answer()
 
 
-@router.callback_query(F.data == "cooperation:start")
-async def cooperation_placeholder(callback: CallbackQuery, lang: Language):
-    await callback.answer(get_text("coming_soon", lang), show_alert=True)
-
 
 def _build_product_caption(product, lang: Language) -> str:
     name = product.name_ru if lang == Language.RU else product.name_en

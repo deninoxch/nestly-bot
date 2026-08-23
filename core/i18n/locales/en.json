@@ -41,5 +41,21 @@
   "product_added": "✅ Product added successfully",
   "btn_skip": "⏭️ Skip",
   "btn_finish_photos": "✅ Finish adding",
-  "coming_soon": "🚧 Coming soon"
+  "coming_soon": "🚧 Coming soon",
+  "enter_company_name": "Enter your company name:",
+  "enter_contact_info": "Enter contact details (phone or email):",
+  "enter_cooperation_message": "Describe your cooperation proposal:",
+  "application_submitted": "✅ Application submitted! We'll get in touch soon.",
+  "new_application_notification": "🤝 New cooperation application!\n\nCompany: {company}\nContact: {contact}\n\nCheck /admin_panel",
+  "no_users_to_promote": "No users available to promote",
+  "choose_user_to_promote": "Choose a user to make admin:",
+  "btn_view_applications": "📋 Cooperation applications",
+  "pending_applications_title": "Pending applications:",
+  "no_pending_applications": "No new applications",
+  "btn_accept": "✅ Accept",
+  "btn_reject": "❌ Reject",
+  "application_processed": "Application processed",
+  "application_accepted": "🎉 Your cooperation application has been accepted! We'll be in touch soon.",
+  "application_rejected": "Unfortunately, your cooperation application has been rejected.",
+  "btn_message_applicant": "💬 Message on Telegram"
 }

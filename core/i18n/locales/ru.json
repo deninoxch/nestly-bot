@@ -41,5 +41,21 @@
   "product_added": "✅ Товар успешно добавлен",
   "btn_skip": "⏭️ Пропустить",
   "btn_finish_photos": "✅ Завершить добавление",
-  "coming_soon": "🚧 Раздел в разработке"
+  "coming_soon": "🚧 Раздел в разработке",
+  "enter_company_name": "Введите название вашей компании:",
+  "enter_contact_info": "Введите контактные данные (телефон или email):",
+  "enter_cooperation_message": "Опишите суть предложения о сотрудничестве:",
+  "application_submitted": "✅ Заявка отправлена! Мы свяжемся с вами в ближайшее время.",
+  "new_application_notification": "🤝 Новая заявка на сотрудничество!\n\nКомпания: {company}\nКонтакты: {contact}\n\nПроверьте /admin_panel",
+  "no_users_to_promote": "Нет пользователей, доступных для назначения",
+  "choose_user_to_promote": "Выберите пользователя, чтобы сделать его админом:",
+  "btn_view_applications": "📋 Заявки на сотрудничество",
+  "pending_applications_title": "Заявки в ожидании:",
+  "no_pending_applications": "Новых заявок нет",
+  "btn_accept": "✅ Принять",
+  "btn_reject": "❌ Отклонить",
+  "application_processed": "Заявка обработана",
+  "application_accepted": "🎉 Ваша заявка на сотрудничество принята! Мы скоро свяжемся с вами.",
+  "application_rejected": "К сожалению, ваша заявка на сотрудничество отклонена.",
+  "btn_message_applicant": "💬 Написать в Telegram"
 }

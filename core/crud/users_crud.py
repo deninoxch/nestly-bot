@@ -22,3 +22,9 @@ async def get_user_by_telegram_id(session: AsyncSession, telegram_id: int) -> Us
 async def set_user_role(session: AsyncSession, user: User, role: UserRole) -> None:
     user.role = role
     await session.commit()
+
+async def get_regular_users(session: AsyncSession) -> list[User]:
+    result = await session.execute(
+        select(User).where(User.role == UserRole.USER).order_by(User.id)
+    )
+    return list(result.scalars().all())
