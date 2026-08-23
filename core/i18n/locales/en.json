@@ -24,5 +24,21 @@
   "enter_category_name_en": "Enter category name in English:",
   "category_added": "✅ Category added successfully",
   "btn_cancel": "❌ Cancel",
-  "must_be_english": "❌ This doesn't look like English. Please try again:"
+  "must_be_english": "❌ This doesn't look like English. Please try again:",
+  "no_leaf_categories": "❌ First create at least one category without subcategories (via /add_category)",
+  "choose_product_category": "Choose category for the product:",
+  "enter_product_name_ru": "Enter product name in Russian:",
+  "enter_product_name_en": "Enter product name in English:",
+  "enter_product_description_ru": "Enter product description in Russian:",
+  "enter_product_description_en": "Enter product description in English:",
+  "choose_product_country": "Choose country of origin:",
+  "enter_product_price": "Enter product price (numbers only, e.g. 15990):",
+  "invalid_price": "❌ Enter a valid price (positive number, e.g. 15990):",
+  "send_product_photos": "Send product photos (up to 10).",
+  "photo_added": "📸 Photo added ({count}/10)",
+  "max_photos_reached": "❌ Limit of 10 photos reached",
+  "at_least_one_photo": "❌ You need to send at least one photo before ",
+  "product_added": "✅ Product added successfully",
+  "btn_skip": "⏭️ Skip",
+  "btn_finish_photos": "✅ Finish adding"
 }

@@ -7,6 +7,7 @@ from core.i18n.translator import get_text
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from core.enums import Country
 
 from core.database.models.category import Category
 
@@ -60,4 +61,45 @@ async def categories_selection_keyboard(
 def cancel_keyboard(lang: Language) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(text=get_text("btn_cancel", lang), callback_data="admin_cancel")
+    return builder.as_markup()
+
+def leaf_categories_keyboard(categories: list[Category], lang: Language) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+
+    for category in categories:
+        name = category.name_ru if lang == Language.RU else category.name_en
+        builder.button(text=name, callback_data=f"selectcat:{category.id}")
+
+    builder.adjust(1)
+    return builder.as_markup()
+
+
+
+def country_selection_keyboard(lang: Language) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(text="🇷🇺 Россия" if lang == Language.RU else "🇷🇺 Russia", callback_data="selectcountry:RUSSIA")
+    builder.button(text="🇺🇸 США" if lang == Language.RU else "🇺🇸 USA", callback_data="selectcountry:USA")
+    builder.adjust(2)
+    return builder.as_markup()
+
+
+def leaf_categories_keyboard(categories, lang: Language) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+
+    for category in categories:
+        name = category.name_ru if lang == Language.RU else category.name_en
+        builder.button(text=name, callback_data=f"selectcat:{category.id}")
+
+    builder.adjust(1)
+    return builder.as_markup()
+
+def skip_keyboard(lang: Language) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(text=get_text("btn_skip", lang), callback_data="skip_step")
+    return builder.as_markup()
+
+
+def finish_photos_keyboard(lang: Language) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(text=get_text("btn_finish_photos", lang), callback_data="finish_photos")
     return builder.as_markup()

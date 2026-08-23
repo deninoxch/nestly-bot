@@ -22,3 +22,10 @@ async def get_category_by_id(
         select(Category).where(Category.id == category_id)
     )
     return result.scalar_one_or_none()
+
+async def get_leaf_categories(session: AsyncSession) -> list[Category]:
+    result = await session.execute(select(Category).order_by(Category.id))
+    all_categories = list(result.scalars().all())
+
+    parent_ids = {c.parent_id for c in all_categories if c.parent_id is not None}
+    return [c for c in all_categories if c.id not in parent_ids]
