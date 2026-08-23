@@ -6,11 +6,14 @@ from core.enums import Language
 from core.i18n.translator import get_text
 from core.database.models.product import Product
 
-def language_keyboard() -> InlineKeyboardMarkup:
+def language_keyboard(lang: Language) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(text="🇷🇺 Русский", callback_data="lang:ru")
     builder.button(text="🇬🇧 English", callback_data="lang:en")
     builder.adjust(2)
+    builder.row(
+        InlineKeyboardButton(text=get_text("btn_back", lang), callback_data="menu:main")
+    )
     return builder.as_markup()
 
 
@@ -28,7 +31,18 @@ def categories_keyboard(
 
     builder.adjust(1)
 
-    if not is_root:
+    if is_root:
+        builder.row(
+            InlineKeyboardButton(
+                text=get_text("btn_cooperation", lang), callback_data="cooperation:start"
+            )
+        )
+        builder.row(
+            InlineKeyboardButton(
+                text=get_text("btn_language", lang), callback_data="menu:language"
+            )
+        )
+    else:
         if parent_id is not None:
             back_callback = f"cat:{parent_id}"
         else:

@@ -40,5 +40,6 @@
   "at_least_one_photo": "❌ You need to send at least one photo before ",
   "product_added": "✅ Product added successfully",
   "btn_skip": "⏭️ Skip",
-  "btn_finish_photos": "✅ Finish adding"
+  "btn_finish_photos": "✅ Finish adding",
+  "coming_soon": "🚧 Coming soon"
 }

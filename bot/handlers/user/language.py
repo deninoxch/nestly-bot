@@ -15,8 +15,17 @@ router = Router()
 async def cmd_language(message: Message, lang: Language):
     await message.answer(
         get_text("choose_language", lang),
-        reply_markup=language_keyboard(),
+        reply_markup=language_keyboard(lang),
     )
+
+
+@router.callback_query(F.data == "menu:language")
+async def show_language_menu(callback: CallbackQuery, lang: Language):
+    await callback.message.edit_text(
+        get_text("choose_language", lang),
+        reply_markup=language_keyboard(lang),
+    )
+    await callback.answer()
 
 
 @router.callback_query(F.data.startswith("lang:"))
@@ -25,13 +34,12 @@ async def process_language_choice(
     user: User,
     session: AsyncSession,
 ):
-    new_lang_code = callback.data.split(":")[1]  
+    new_lang_code = callback.data.split(":")[1]
     new_lang = Language(new_lang_code)
 
     user.language = new_lang
     await session.commit()
 
-    await callback.message.edit_text(
-        get_text("language_changed", new_lang),
-    )
-    await callback.answer()
+    from bot.handlers.user.catalog import render_main_menu
+    await render_main_menu(callback.message, new_lang, session, edit=True)
+    await callback.answer(get_text("language_changed", new_lang))

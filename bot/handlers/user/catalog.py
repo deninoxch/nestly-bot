@@ -20,7 +20,6 @@ from bot.keyboards.user_kb import (
     country_filter_keyboard,
 )
 
-
 router = Router()
 
 
@@ -38,6 +37,25 @@ async def safe_edit_media(message: Message, media, reply_markup=None):
     except TelegramBadRequest as e:
         if "message is not modified" not in str(e):
             raise
+
+
+async def safe_edit_or_resend(message: Message, text: str, reply_markup=None):
+    if message.photo:
+        await message.delete()
+        await message.answer(text, reply_markup=reply_markup)
+    else:
+        await safe_edit_text(message, text, reply_markup=reply_markup)
+
+
+async def render_main_menu(message_or_callback_message, lang: Language, session: AsyncSession, edit: bool = False):
+    categories = await get_categories_by_parent(session, parent_id=None)
+    text = get_text("welcome_message", lang)
+    markup = categories_keyboard(categories, lang, parent_id=None, is_root=True)
+
+    if edit:
+        await safe_edit_or_resend(message_or_callback_message, text, reply_markup=markup)
+    else:
+        await message_or_callback_message.answer(text, reply_markup=markup)
 
 
 @router.message(CommandStart())
@@ -60,7 +78,7 @@ async def show_category(callback: CallbackQuery, lang: Language, session: AsyncS
     name = current_category.name_ru if lang == Language.RU else current_category.name_en
 
     if subcategories:
-        await safe_edit_text(
+        await safe_edit_or_resend(
             callback.message,
             name,
             reply_markup=categories_keyboard(
@@ -71,7 +89,7 @@ async def show_category(callback: CallbackQuery, lang: Language, session: AsyncS
         countries = await get_distinct_countries(session, category_id)
 
         if len(countries) > 1:
-            await safe_edit_text(
+            await safe_edit_or_resend(
                 callback.message,
                 f"📦 {name}\n\n{get_text('choose_country', lang)}",
                 reply_markup=country_filter_keyboard(
@@ -80,19 +98,20 @@ async def show_category(callback: CallbackQuery, lang: Language, session: AsyncS
             )
         elif len(countries) == 1:
             products = await get_products_by_category_and_country(session, category_id, countries[0])
-            await safe_edit_text(
+            await safe_edit_or_resend(
                 callback.message,
                 f"📦 {name}",
                 reply_markup=products_list_keyboard(products, current_category.parent_id, lang),
             )
         else:
-            await safe_edit_text(
+            await safe_edit_or_resend(
                 callback.message,
                 f"📦 {name}\n\n{get_text('no_products', lang)}",
                 reply_markup=categories_keyboard([], lang, parent_id=current_category.parent_id),
             )
 
     await callback.answer()
+
 
 @router.callback_query(F.data.startswith("prodcountry:"))
 async def show_products_by_country(callback: CallbackQuery, lang: Language, session: AsyncSession):
@@ -104,12 +123,13 @@ async def show_products_by_country(callback: CallbackQuery, lang: Language, sess
     products = await get_products_by_category_and_country(session, category_id, country)
     name = current_category.name_ru if lang == Language.RU else current_category.name_en
 
-    await safe_edit_text(
+    await safe_edit_or_resend(
         callback.message,
         f"📦 {name}",
         reply_markup=products_list_keyboard(products, current_category.parent_id, lang),
     )
     await callback.answer()
+
 
 @router.callback_query(F.data.startswith("product:"))
 async def show_product_card(callback: CallbackQuery, lang: Language, session: AsyncSession):
@@ -167,19 +187,14 @@ async def noop_handler(callback: CallbackQuery):
     await callback.answer()
 
 
+@router.callback_query(F.data == "cooperation:start")
+async def cooperation_placeholder(callback: CallbackQuery, lang: Language):
+    await callback.answer(get_text("coming_soon", lang), show_alert=True)
+
+
 def _build_product_caption(product, lang: Language) -> str:
     name = product.name_ru if lang == Language.RU else product.name_en
     description = product.description_ru if lang == Language.RU else product.description_en
     description = description or ""
 
     return f"<b>{name}</b>\n\n{description}\n\n💰 {product.price} ₽"
-
-async def render_main_menu(message_or_callback_message, lang: Language, session: AsyncSession, edit: bool = False):
-    categories = await get_categories_by_parent(session, parent_id=None)
-    text = get_text("welcome_message", lang)
-    markup = categories_keyboard(categories, lang, parent_id=None, is_root=True)
-
-    if edit:
-        await safe_edit_text(message_or_callback_message, text, reply_markup=markup)
-    else:
-        await message_or_callback_message.answer(text, reply_markup=markup)
