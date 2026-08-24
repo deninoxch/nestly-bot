@@ -86,6 +86,7 @@ BOT_TOKEN=токен_от_BotFather
 SUPERADMIN_IDS=ваш_telegram_id,второй_id_через_запятую
 DATABASE_URL=sqlite+aiosqlite:///nestly.db
 DEBUG=True
+COMPANY_CONTACT_USERNAME=(твой юз)
 ```
  
 - `BOT_TOKEN` — получить у [@BotFather](https://t.me/BotFather)
