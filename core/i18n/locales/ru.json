@@ -72,5 +72,19 @@
   "btn_delete": "🗑 Удалить",
   "btn_confirm_delete": "✅ Да, удалить",
   "confirm_delete_application": "⚠️ Вы уверены, что хотите удалить эту заявку? Это действие необратимо.",
-  "application_deleted": "🗑 Заявка удалена"
+  "application_deleted": "🗑 Заявка удалена",
+  "btn_add_category_panel": "📁 Добавить категорию",
+  "btn_add_product_panel": "🛋 Добавить товар",
+  "btn_manage_categories": "📂 Категории (вкл/выкл)",
+  "btn_manage_products": "🛠 Товары (управление)",
+  "manage_categories_title": "Категории (нажмите, чтобы скрыть/показать):",
+  "choose_category_to_manage": "Выберите категорию:",
+  "manage_products_title": "Товары (нажмите, чтобы открыть карточку):",
+  "btn_hide_product": "🙈 Скрыть товар",
+  "btn_show_product": "👁 Показать товар",
+  "btn_edit_price": "💰 Изменить цену",
+  "status_active": "🟢 Активен",
+  "status_hidden": "🔴 Скрыт",
+  "enter_new_price": "💰 Введите новую цену:",
+  "price_updated": "✅ Цена обновлена"
 }

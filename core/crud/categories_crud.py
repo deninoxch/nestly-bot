@@ -29,3 +29,12 @@ async def get_leaf_categories(session: AsyncSession) -> list[Category]:
 
     parent_ids = {c.parent_id for c in all_categories if c.parent_id is not None}
     return [c for c in all_categories if c.id not in parent_ids]
+
+async def get_all_categories(session: AsyncSession) -> list[Category]:
+    result = await session.execute(select(Category).order_by(Category.id))
+    return list(result.scalars().all())
+
+
+async def toggle_category_active(session: AsyncSession, category: Category) -> None:
+    category.is_active = not category.is_active
+    await session.commit()

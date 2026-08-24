@@ -16,3 +16,6 @@ class AddProductStates(StatesGroup):
     waiting_for_country = State()
     waiting_for_price = State()
     waiting_for_photos = State()
+
+class EditProductStates(StatesGroup):
+    waiting_for_new_price = State()

@@ -18,7 +18,7 @@ from bot.handlers.admin import role_management as admin_roles
 from bot.handlers.admin import product_management as admin_products
 from bot.handlers.user import cooperation as user_cooperation
 from bot.handlers.admin import applications_review as admin_applications
-
+from bot.handlers.admin import catalog_management as admin_catalog_management
 async def main():
     logging.basicConfig(level=logging.INFO)
 
@@ -34,6 +34,7 @@ async def main():
     dp.include_router(admin_roles.router)
     dp.include_router(admin_products.router)
     dp.include_router(admin_applications.router)
+    dp.include_router(admin_catalog_management.router)
     dp.include_router(user_cooperation.router)
     dp.include_router(user_catalog.router)
     dp.include_router(user_language.router)

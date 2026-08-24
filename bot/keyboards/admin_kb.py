@@ -11,11 +11,16 @@ from core.enums import Country
 
 from core.database.models.category import Category
 from core.enums import ApplicationStatus
+from core.database.models.product import Product
 
 def admin_panel_keyboard(lang: Language) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(text=get_text("btn_manage_admins", lang), callback_data="admins:list")
     builder.button(text=get_text("btn_view_applications", lang), callback_data="apps:list")
+    builder.button(text=get_text("btn_add_category_panel", lang), callback_data="panel_add_category")
+    builder.button(text=get_text("btn_add_product_panel", lang), callback_data="panel_add_product")
+    builder.button(text=get_text("btn_manage_categories", lang), callback_data="manage_categories")
+    builder.button(text=get_text("btn_manage_products", lang), callback_data="manage_products_cats")
     builder.adjust(1)
     return builder.as_markup()
 
@@ -183,4 +188,62 @@ def delete_confirmation_keyboard(application_id: int, lang: Language) -> InlineK
     builder.button(text=get_text("btn_confirm_delete", lang), callback_data=f"app_delete:{application_id}")
     builder.button(text=get_text("btn_cancel", lang), callback_data=f"app_view_history:{application_id}")
     builder.adjust(2)
+    return builder.as_markup()
+
+def manage_categories_keyboard(categories: list[Category], lang: Language) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+
+    for c in categories:
+        name = c.name_ru if lang == Language.RU else c.name_en
+        icon = "🟢" if c.is_active else "🔴"
+        builder.button(text=f"{icon} {name}", callback_data=f"toggle_cat:{c.id}")
+
+    builder.adjust(1)
+    builder.row(
+        InlineKeyboardButton(text=get_text("btn_back", lang), callback_data="admin_panel:main")
+    )
+    return builder.as_markup()
+
+
+def manage_products_categories_keyboard(categories: list[Category], lang: Language) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+
+    for c in categories:
+        name = c.name_ru if lang == Language.RU else c.name_en
+        builder.button(text=name, callback_data=f"manage_prod_cat:{c.id}")
+
+    builder.adjust(1)
+    builder.row(
+        InlineKeyboardButton(text=get_text("btn_back", lang), callback_data="admin_panel:main")
+    )
+    return builder.as_markup()
+
+
+def manage_products_list_keyboard(products: list[Product], category_id: int, lang: Language) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+
+    for p in products:
+        name = p.name_ru if lang == Language.RU else p.name_en
+        icon = "🟢" if p.is_active else "🔴"
+        builder.button(text=f"{icon} {name}", callback_data=f"manage_prod:{p.id}")
+
+    builder.adjust(1)
+    builder.row(
+        InlineKeyboardButton(text=get_text("btn_back", lang), callback_data="manage_products_cats")
+    )
+    return builder.as_markup()
+
+
+def product_manage_card_keyboard(product_id: int, category_id: int, is_active: bool, lang: Language) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+
+    toggle_text = get_text("btn_hide_product", lang) if is_active else get_text("btn_show_product", lang)
+    builder.button(text=toggle_text, callback_data=f"toggle_prod:{product_id}")
+    builder.button(text=get_text("btn_edit_price", lang), callback_data=f"edit_price:{product_id}")
+    builder.adjust(1)
+    builder.row(
+        InlineKeyboardButton(
+            text=get_text("btn_back", lang), callback_data=f"manage_prod_cat:{category_id}"
+        )
+    )
     return builder.as_markup()

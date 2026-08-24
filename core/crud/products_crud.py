@@ -53,3 +53,22 @@ async def get_products_by_category_and_country(
         .order_by(Product.id)
     )
     return list(result.scalars().all())
+
+async def get_all_products_by_category(session: AsyncSession, category_id: int) -> list[Product]:
+    result = await session.execute(
+        select(Product)
+        .where(Product.category_id == category_id)
+        .options(selectinload(Product.photos))
+        .order_by(Product.id)
+    )
+    return list(result.scalars().all())
+
+
+async def toggle_product_active(session: AsyncSession, product: Product) -> None:
+    product.is_active = not product.is_active
+    await session.commit()
+
+
+async def update_product_price(session: AsyncSession, product: Product, price) -> None:
+    product.price = price
+    await session.commit()

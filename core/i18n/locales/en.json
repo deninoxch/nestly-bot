@@ -72,5 +72,19 @@
   "btn_delete": "🗑 Delete",
   "btn_confirm_delete": "✅ Yes, delete",
   "confirm_delete_application": "⚠️ Are you sure you want to delete this application? This cannot be undone.",
-  "application_deleted": "🗑 Application deleted"
+  "application_deleted": "🗑 Application deleted",
+  "btn_add_category_panel": "📁 Add category",
+  "btn_add_product_panel": "🛋 Add product",
+  "btn_manage_categories": "📂 Categories (toggle)",
+  "btn_manage_products": "🛠 Products (manage)",
+  "manage_categories_title": "Categories (tap to hide/show):",
+  "choose_category_to_manage": "Choose category:",
+  "manage_products_title": "Products (tap to open):",
+  "btn_hide_product": "🙈 Hide product",
+  "btn_show_product": "👁 Show product",
+  "btn_edit_price": "💰 Edit price",
+  "status_active": "🟢 Active",
+  "status_hidden": "🔴 Hidden",
+  "enter_new_price": "💰 Enter new price:",
+  "price_updated": "✅ Price updated"
 }

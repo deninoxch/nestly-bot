@@ -22,7 +22,6 @@ from core.database.models.user import User
 from core.enums import Language, Country
 from core.i18n.translator import get_text
 from core.utils import contains_cyrillic
-
 from core.logger import logger
 
 router = Router()
@@ -39,6 +38,17 @@ async def cmd_add_category(message: Message, lang: Language, session: AsyncSessi
         reply_markup=await categories_selection_keyboard(session, lang, current_parent_id=None),
     )
     await state.set_state(AddCategoryStates.waiting_for_parent)
+
+
+@router.callback_query(F.data == "panel_add_category")
+async def panel_add_category(callback: CallbackQuery, lang: Language, session: AsyncSession, state: FSMContext):
+    await state.clear()
+    await callback.message.edit_text(
+        get_text("choose_parent_category", lang),
+        reply_markup=await categories_selection_keyboard(session, lang, current_parent_id=None),
+    )
+    await state.set_state(AddCategoryStates.waiting_for_parent)
+    await callback.answer()
 
 
 @router.callback_query(
@@ -84,14 +94,7 @@ async def process_category_name_en(message: Message, lang: Language, session: As
     )
     session.add(new_category)
     await session.commit()
-
-    session.add(new_category)
-    await session.commit()
     logger.info(f"Category created: id={new_category.id}, name_ru={new_category.name_ru}")
-
-    await state.clear()
-    await message.answer(get_text("category_added", lang))
-    await render_main_menu(message, lang, session, edit=False)
 
     await state.clear()
     await message.answer(get_text("category_added", lang))
@@ -115,6 +118,23 @@ async def cmd_add_product(message: Message, lang: Language, session: AsyncSessio
     await state.set_state(AddProductStates.waiting_for_category)
 
 
+@router.callback_query(F.data == "panel_add_product")
+async def panel_add_product(callback: CallbackQuery, lang: Language, session: AsyncSession, state: FSMContext):
+    await state.clear()
+    categories = await get_leaf_categories(session)
+
+    if not categories:
+        await callback.answer(get_text("no_leaf_categories", lang), show_alert=True)
+        return
+
+    await callback.message.edit_text(
+        get_text("choose_product_category", lang),
+        reply_markup=leaf_categories_keyboard(categories, lang),
+    )
+    await state.set_state(AddProductStates.waiting_for_category)
+    await callback.answer()
+
+
 @router.callback_query(
     StateFilter(AddProductStates.waiting_for_category), F.data.startswith("selectcat:")
 )
@@ -134,9 +154,7 @@ async def process_product_name_ru(message: Message, lang: Language, state: FSMCo
         return
 
     await state.update_data(name_ru=message.text.strip())
-    await message.answer(
-        get_text("enter_product_name_en", lang),
-    )
+    await message.answer(get_text("enter_product_name_en", lang))
     await state.set_state(AddProductStates.waiting_for_name_en)
 
 
@@ -284,14 +302,7 @@ async def finish_adding_product(
         session.add(ProductPhoto(product_id=new_product.id, file_id=file_id, position=index))
 
     await session.commit()
-    await session.commit()
     logger.info(f"Product created: id={new_product.id}, name_ru={new_product.name_ru}, by user_id={user.id}")
-    await state.clear()
-
-    await callback.message.answer(get_text("product_added", lang))
-    await render_main_menu(callback.message, lang, session, edit=False)
-    await callback.answer()
-    
     await state.clear()
 
     await callback.message.answer(get_text("product_added", lang))
