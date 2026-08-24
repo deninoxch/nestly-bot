@@ -28,7 +28,7 @@ class I18nMiddleware(BaseMiddleware):
         db_user = result.scalar_one_or_none()
 
         if db_user is None:
-            role = UserRole.SUPERADMIN if tg_user.id == settings.SUPERADMIN_ID else UserRole.USER
+            role = UserRole.SUPERADMIN if tg_user.id in settings.superadmin_ids else UserRole.USER
             db_user = User(
                 telegram_id=tg_user.id,
                 full_name=tg_user.full_name,
@@ -39,7 +39,7 @@ class I18nMiddleware(BaseMiddleware):
             await session.commit()
             await session.refresh(db_user)
         else:
-            if tg_user.id == settings.SUPERADMIN_ID and db_user.role != UserRole.SUPERADMIN:
+            if tg_user.id in settings.superadmin_ids and db_user.role != UserRole.SUPERADMIN:
                 db_user.role = UserRole.SUPERADMIN
                 await session.commit()
                 await session.refresh(db_user)
