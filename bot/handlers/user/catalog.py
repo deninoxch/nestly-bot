@@ -205,3 +205,15 @@ def _build_product_caption(product, lang: Language) -> str:
     lines.append(f"💰 {get_text('price_label', lang)}: {product.price} ₽")
 
     return "\n".join(lines)
+
+from bot.keyboards.user_kb import other_menu_keyboard
+
+
+@router.callback_query(F.data == "menu:other")
+async def show_other_menu(callback: CallbackQuery, lang: Language):
+    await safe_edit_or_resend(
+        callback.message,
+        get_text("other_menu_title", lang),
+        reply_markup=other_menu_keyboard(lang),
+    )
+    await callback.answer()

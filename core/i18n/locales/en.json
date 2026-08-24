@@ -3,6 +3,7 @@
   "btn_cooperation": "🤝 Cooperation",
   "btn_language": "🌍 Change language",
   "btn_back": "⬅️ Back",
+  "menu_other_section": "⚙️ Other",
   "choose_language": "Choose interface language:",
   "language_changed": "✅ Language switched to English",
   "no_products": "No products in this category yet",
@@ -86,5 +87,7 @@
   "status_active": "🟢 Active",
   "status_hidden": "🔴 Hidden",
   "enter_new_price": "💰 Enter new price:",
-  "price_updated": "✅ Price updated"
+  "price_updated": "✅ Price updated",
+  "other_menu_title": "⚙️ Additional options",
+  "btn_order": "🛒 Order"
 }

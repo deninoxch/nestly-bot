@@ -33,14 +33,7 @@ def categories_keyboard(
 
     if is_root:
         builder.row(
-            InlineKeyboardButton(
-                text=get_text("btn_cooperation", lang), callback_data="cooperation:start"
-            )
-        )
-        builder.row(
-            InlineKeyboardButton(
-                text=get_text("btn_language", lang), callback_data="menu:language"
-            )
+            InlineKeyboardButton(text=get_text("menu_other_section", lang), callback_data="menu:other")
         )
     else:
         if parent_id is not None:
@@ -53,6 +46,8 @@ def categories_keyboard(
         )
 
     return builder.as_markup()
+
+from core.config import settings
 
 def product_card_keyboard(
     product_id: int,
@@ -72,6 +67,12 @@ def product_card_keyboard(
             InlineKeyboardButton(text="▶️", callback_data=f"photo:{product_id}:{next_index}"),
         )
 
+    builder.row(
+        InlineKeyboardButton(
+            text=get_text("btn_order", lang),
+            url=f"https://t.me/{settings.COMPANY_CONTACT_USERNAME}",
+        )
+    )
     builder.row(
         InlineKeyboardButton(text=get_text("btn_back", lang), callback_data=f"cat:{category_id}")
     )
@@ -130,4 +131,14 @@ def country_filter_keyboard(
         InlineKeyboardButton(text=get_text("btn_back", lang), callback_data=back_callback)
     )
 
+    return builder.as_markup()
+
+def other_menu_keyboard(lang: Language) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(text=get_text("btn_cooperation", lang), callback_data="cooperation:start")
+    builder.button(text=get_text("btn_language", lang), callback_data="menu:language")
+    builder.adjust(1)
+    builder.row(
+        InlineKeyboardButton(text=get_text("btn_back", lang), callback_data="menu:main")
+    )
     return builder.as_markup()

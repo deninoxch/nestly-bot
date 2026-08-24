@@ -3,6 +3,7 @@
   "btn_cooperation": "🤝 Сотрудничество",
   "btn_language": "🌍 Сменить язык",
   "btn_back": "⬅️ Назад",
+  "menu_other_section": "⚙️ Другое",
   "choose_language": "Выберите язык интерфейса:",
   "language_changed": "✅ Язык переключён на русский",
   "no_products": "Товаров в этой категории пока нет",
@@ -86,5 +87,8 @@
   "status_active": "🟢 Активен",
   "status_hidden": "🔴 Скрыт",
   "enter_new_price": "💰 Введите новую цену:",
-  "price_updated": "✅ Цена обновлена"
+  "price_updated": "✅ Цена обновлена",
+  "other_menu_title": "⚙️ Дополнительные функции",
+  "btn_order": "🛒 Заказать"
+  
 }
