@@ -17,23 +17,7 @@ router.message.filter(IsSuperAdmin())
 router.callback_query.filter(IsSuperAdmin())
 
 
-@router.message(Command("admin_panel"))
-async def cmd_admin_panel(message: Message, lang: Language, state: FSMContext):
-    await state.clear()
-    await message.answer(
-        get_text("admin_panel_title", lang),
-        reply_markup=admin_panel_keyboard(lang),
-    )
 
-
-@router.callback_query(F.data == "admin_panel:main")
-async def show_admin_panel(callback: CallbackQuery, lang: Language, state: FSMContext):
-    await state.clear()
-    await callback.message.edit_text(
-        get_text("admin_panel_title", lang),
-        reply_markup=admin_panel_keyboard(lang),
-    )
-    await callback.answer()
 
 
 @router.callback_query(F.data == "admins:list")

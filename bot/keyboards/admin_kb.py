@@ -13,14 +13,17 @@ from core.database.models.category import Category
 from core.enums import ApplicationStatus
 from core.database.models.product import Product
 
-def admin_panel_keyboard(lang: Language) -> InlineKeyboardMarkup:
+def admin_panel_keyboard(lang: Language, is_superadmin: bool = False) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
-    builder.button(text=get_text("btn_manage_admins", lang), callback_data="admins:list")
     builder.button(text=get_text("btn_view_applications", lang), callback_data="apps:list")
     builder.button(text=get_text("btn_add_category_panel", lang), callback_data="panel_add_category")
     builder.button(text=get_text("btn_add_product_panel", lang), callback_data="panel_add_product")
     builder.button(text=get_text("btn_manage_categories", lang), callback_data="manage_categories")
     builder.button(text=get_text("btn_manage_products", lang), callback_data="manage_products_cats")
+
+    if is_superadmin:
+        builder.button(text=get_text("btn_manage_admins", lang), callback_data="admins:list")
+
     builder.adjust(1)
     return builder.as_markup()
 

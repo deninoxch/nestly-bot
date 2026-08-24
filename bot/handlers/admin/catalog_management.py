@@ -1,5 +1,5 @@
 from aiogram import Router, F
-from aiogram.filters import StateFilter
+from aiogram.filters import StateFilter, Command  
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,10 +11,12 @@ from bot.keyboards.admin_kb import (
     manage_products_categories_keyboard,
     manage_products_list_keyboard,
     product_manage_card_keyboard,
+    admin_panel_keyboard, 
 )
 from core.crud.categories_crud import get_all_categories, get_category_by_id, toggle_category_active, get_leaf_categories
 from core.crud.products_crud import get_all_products_by_category, get_product_by_id, toggle_product_active, update_product_price
-from core.enums import Language
+from core.database.models.user import User
+from core.enums import Language, UserRole  
 from core.i18n.translator import get_text
 from core.logger import logger
 
@@ -148,3 +150,24 @@ async def process_new_price(message: Message, lang: Language, session: AsyncSess
         get_text("price_updated", lang),
         reply_markup=product_manage_card_keyboard(product.id, product.category_id, product.is_active, lang),
     )
+
+
+@router.message(Command("admin_panel"))
+async def cmd_admin_panel(message: Message, lang: Language, state: FSMContext, user: User):
+    await state.clear()
+    is_superadmin = user.role == UserRole.SUPERADMIN
+    await message.answer(
+        get_text("admin_panel_title", lang),
+        reply_markup=admin_panel_keyboard(lang, is_superadmin=is_superadmin),
+    )
+
+
+@router.callback_query(F.data == "admin_panel:main")
+async def show_admin_panel(callback: CallbackQuery, lang: Language, state: FSMContext, user: User):
+    await state.clear()
+    is_superadmin = user.role == UserRole.SUPERADMIN
+    await callback.message.edit_text(
+        get_text("admin_panel_title", lang),
+        reply_markup=admin_panel_keyboard(lang, is_superadmin=is_superadmin),
+    )
+    await callback.answer()
