@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.enums import Country
 
 from core.database.models.category import Category
-
+from core.enums import ApplicationStatus
 
 def admin_panel_keyboard(lang: Language) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
@@ -131,6 +131,9 @@ def applications_list_keyboard(applications: list[Application], lang: Language) 
 
     builder.adjust(1)
     builder.row(
+        InlineKeyboardButton(text=get_text("btn_history", lang), callback_data="apps:history")
+    )
+    builder.row(
         InlineKeyboardButton(text=get_text("btn_back", lang), callback_data="admin_panel:main")
     )
     return builder.as_markup()
@@ -150,4 +153,34 @@ def application_card_keyboard(application_id: int, applicant_telegram_id: int, l
     builder.row(
         InlineKeyboardButton(text=get_text("btn_back", lang), callback_data="apps:list")
     )
+    return builder.as_markup()
+
+def applications_history_keyboard(applications: list[Application], lang: Language) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+
+    for app in applications:
+        status_icon = "✅" if app.status == ApplicationStatus.ACCEPTED else "❌"
+        builder.button(text=f"{status_icon} {app.company_name}", callback_data=f"app_view_history:{app.id}")
+
+    builder.adjust(1)
+    builder.row(
+        InlineKeyboardButton(text=get_text("btn_back", lang), callback_data="apps:list")
+    )
+    return builder.as_markup()
+
+def history_card_keyboard(application_id: int, lang: Language) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(text=get_text("btn_delete", lang), callback_data=f"app_delete_confirm:{application_id}")
+    builder.adjust(1)
+    builder.row(
+        InlineKeyboardButton(text=get_text("btn_back", lang), callback_data="apps:history")
+    )
+    return builder.as_markup()
+
+
+def delete_confirmation_keyboard(application_id: int, lang: Language) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(text=get_text("btn_confirm_delete", lang), callback_data=f"app_delete:{application_id}")
+    builder.button(text=get_text("btn_cancel", lang), callback_data=f"app_view_history:{application_id}")
+    builder.adjust(2)
     return builder.as_markup()

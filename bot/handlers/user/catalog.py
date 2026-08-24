@@ -193,6 +193,15 @@ async def noop_handler(callback: CallbackQuery):
 def _build_product_caption(product, lang: Language) -> str:
     name = product.name_ru if lang == Language.RU else product.name_en
     description = product.description_ru if lang == Language.RU else product.description_en
-    description = description or ""
+    country_label = get_text(f"country_{product.country.value}", lang)
 
-    return f"<b>{name}</b>\n\n{description}\n\n💰 {product.price} ₽"
+    lines = [f"🛋 <b>{name}</b>", ""]
+
+    if description:
+        lines.append(description)
+        lines.append("")
+
+    lines.append(f"🌍 {get_text('made_in', lang)}: {country_label}")
+    lines.append(f"💰 {get_text('price_label', lang)}: {product.price} ₽")
+
+    return "\n".join(lines)

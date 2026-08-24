@@ -31,3 +31,12 @@ async def get_all_admins(session: AsyncSession) -> list[User]:
         select(User).where(User.role.in_([UserRole.ADMIN, UserRole.SUPERADMIN]))
     )
     return list(result.scalars().all())
+
+async def get_resolved_applications(session: AsyncSession) -> list[Application]:
+    result = await session.execute(
+        select(Application)
+        .where(Application.status != ApplicationStatus.PENDING)
+        .options(selectinload(Application.applicant))
+        .order_by(Application.reviewed_at.desc())
+    )
+    return list(result.scalars().all())
