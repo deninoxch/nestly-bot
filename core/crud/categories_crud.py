@@ -23,6 +23,12 @@ async def get_category_by_id(
     )
     return result.scalar_one_or_none()
 
+async def get_active_category_by_id(session: AsyncSession, category_id: int) -> Category | None:
+    result = await session.execute(
+        select(Category).where(Category.id == category_id, Category.is_active == True)
+    )
+    return result.scalar_one_or_none()
+
 async def get_leaf_categories(session: AsyncSession) -> list[Category]:
     result = await session.execute(select(Category).order_by(Category.id))
     all_categories = list(result.scalars().all())

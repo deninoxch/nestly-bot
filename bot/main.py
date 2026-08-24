@@ -10,7 +10,6 @@ from bot.handlers.user import catalog as user_catalog
 from bot.middlewares.db_session_middleware import DbSessionMiddleware
 from bot.middlewares.i18n_middleware import I18nMiddleware
 
-from bot.handlers.user import catalog as user_catalog
 from bot.handlers.user import language as user_language
 
 from bot.handlers.admin import role_management as admin_roles

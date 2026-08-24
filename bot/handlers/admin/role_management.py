@@ -95,9 +95,17 @@ async def process_make_admin(callback: CallbackQuery, lang: Language, session: A
     telegram_id = int(callback.data.split(":")[1])
     target_user = await get_user_by_telegram_id(session, telegram_id)
 
-    if target_user:
-        await set_user_role(session, target_user, UserRole.ADMIN)
-        logger.info(f"User promoted to admin: telegram_id={telegram_id}, by superadmin_id={callback.from_user.id}")
+    if target_user is None:
+        await callback.answer(get_text("item_not_found", lang), show_alert=True)
+        users = await get_regular_users(session)
+        await callback.message.edit_text(
+            get_text("choose_user_to_promote", lang),
+            reply_markup=users_selection_keyboard(users, lang),
+        )
+        return
+
+    await set_user_role(session, target_user, UserRole.ADMIN)
+    logger.info(f"User promoted to admin: telegram_id={telegram_id}, by superadmin_id={callback.from_user.id}")
 
     admins = await get_admins(session)
     await callback.message.edit_text(get_text("admin_added", lang))

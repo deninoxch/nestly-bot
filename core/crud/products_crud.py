@@ -72,3 +72,11 @@ async def toggle_product_active(session: AsyncSession, product: Product) -> None
 async def update_product_price(session: AsyncSession, product: Product, price) -> None:
     product.price = price
     await session.commit()
+
+async def get_active_product_by_id(session: AsyncSession, product_id: int) -> Product | None:
+    result = await session.execute(
+        select(Product)
+        .where(Product.id == product_id, Product.is_active == True)
+        .options(selectinload(Product.photos))
+    )
+    return result.scalar_one_or_none()

@@ -89,16 +89,6 @@ def country_selection_keyboard(lang: Language) -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
-def leaf_categories_keyboard(categories, lang: Language) -> InlineKeyboardMarkup:
-    builder = InlineKeyboardBuilder()
-
-    for category in categories:
-        name = category.name_ru if lang == Language.RU else category.name_en
-        builder.button(text=name, callback_data=f"selectcat:{category.id}")
-
-    builder.adjust(1)
-    return builder.as_markup()
-
 def skip_keyboard(lang: Language) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(text=get_text("btn_skip", lang), callback_data="skip_step")

@@ -5,10 +5,10 @@ from aiogram.types import Message, CallbackQuery, InputMediaPhoto
 from aiogram.exceptions import TelegramBadRequest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.crud.categories_crud import get_categories_by_parent, get_category_by_id
+from core.crud.categories_crud import get_categories_by_parent, get_active_category_by_id
 from core.crud.products_crud import (
     get_products_by_category,
-    get_product_by_id,
+    get_active_product_by_id,
     get_distinct_countries,
     get_products_by_category_and_country,
 )
@@ -76,7 +76,12 @@ async def show_main_menu(callback: CallbackQuery, lang: Language, session: Async
 async def show_category(callback: CallbackQuery, lang: Language, session: AsyncSession):
     category_id = int(callback.data.split(":")[1])
 
-    current_category = await get_category_by_id(session, category_id)
+    current_category = await get_active_category_by_id(session, category_id)
+    if current_category is None:
+        await callback.answer(get_text("item_not_found", lang), show_alert=True)
+        await render_main_menu(callback.message, lang, session, edit=True)
+        return
+
     subcategories = await get_categories_by_parent(session, parent_id=category_id)
     name = current_category.name_ru if lang == Language.RU else current_category.name_en
 
@@ -122,7 +127,12 @@ async def show_products_by_country(callback: CallbackQuery, lang: Language, sess
     category_id = int(category_id_str)
     country = Country(country_value)
 
-    current_category = await get_category_by_id(session, category_id)
+    current_category = await get_active_category_by_id(session, category_id)
+    if current_category is None:
+        await callback.answer(get_text("item_not_found", lang), show_alert=True)
+        await render_main_menu(callback.message, lang, session, edit=True)
+        return
+
     products = await get_products_by_category_and_country(session, category_id, country)
     name = current_category.name_ru if lang == Language.RU else current_category.name_en
 
@@ -137,7 +147,11 @@ async def show_products_by_country(callback: CallbackQuery, lang: Language, sess
 @router.callback_query(F.data.startswith("product:"))
 async def show_product_card(callback: CallbackQuery, lang: Language, session: AsyncSession):
     product_id = int(callback.data.split(":")[1])
-    product = await get_product_by_id(session, product_id)
+    product = await get_active_product_by_id(session, product_id)
+
+    if product is None:
+        await callback.answer(get_text("item_not_found", lang), show_alert=True)
+        return
 
     caption = _build_product_caption(product, lang)
     keyboard = product_card_keyboard(
@@ -167,7 +181,15 @@ async def switch_photo(callback: CallbackQuery, lang: Language, session: AsyncSe
     product_id = int(product_id_str)
     photo_index = int(index_str)
 
-    product = await get_product_by_id(session, product_id)
+    product = await get_active_product_by_id(session, product_id)
+    if product is None:
+        await callback.answer(get_text("item_not_found", lang), show_alert=True)
+        return
+
+    if not (0 <= photo_index < len(product.photos)):
+        await callback.answer(get_text("item_not_found", lang), show_alert=True)
+        return
+
     caption = _build_product_caption(product, lang)
     keyboard = product_card_keyboard(
         product_id=product.id,
@@ -190,30 +212,30 @@ async def noop_handler(callback: CallbackQuery):
     await callback.answer()
 
 
-def _build_product_caption(product, lang: Language) -> str:
-    name = product.name_ru if lang == Language.RU else product.name_en
-    description = product.description_ru if lang == Language.RU else product.description_en
-    country_label = get_text(f"country_{product.country.value}", lang)
-
-    lines = [f"🛋 <b>{name}</b>", ""]
-
-    if description:
-        lines.append(description)
-        lines.append("")
-
-    lines.append(f"🌍 {get_text('made_in', lang)}: {country_label}")
-    lines.append(f"💰 {get_text('price_label', lang)}: {product.price} ₽")
-
-    return "\n".join(lines)
-
-from bot.keyboards.user_kb import other_menu_keyboard
-
-
 @router.callback_query(F.data == "menu:other")
 async def show_other_menu(callback: CallbackQuery, lang: Language):
+    from bot.keyboards.user_kb import other_menu_keyboard
+
     await safe_edit_or_resend(
         callback.message,
         get_text("other_menu_title", lang),
         reply_markup=other_menu_keyboard(lang),
     )
     await callback.answer()
+
+
+def _build_product_caption(product, lang: Language) -> str:
+    name = product.name_ru if lang == Language.RU else product.name_en
+    description = product.description_ru if lang == Language.RU else product.description_en
+    description = description or ""
+    country_label = get_text(f"country_{product.country.value}", lang)
+    price_formatted = f"{product.price:.2f}"
+
+    lines = [f"🛋 <b>{name}</b>", ""]
+    if description:
+        lines.append(description)
+        lines.append("")
+    lines.append(f"🌍 {get_text('made_in', lang)}: {country_label}")
+    lines.append(f"💰 {get_text('price_label', lang)}: {price_formatted} ₽")
+
+    return "\n".join(lines)

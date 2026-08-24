@@ -89,5 +89,7 @@
   "enter_new_price": "💰 Enter new price:",
   "price_updated": "✅ Price updated",
   "other_menu_title": "⚙️ Additional options",
-  "btn_order": "🛒 Order"
+  "btn_order": "🛒 Order",
+  "item_not_found": "❌ This item is no longer available",
+  "application_already_resolved": "⚠️ This application has already been resolved by another admin"
 }
